@@ -1,0 +1,62 @@
+---
+# Archive is optional
+- name: Check to make sure oc_archive exists
+  stat: "path={{ oc_archive }}"
+  register: oc_arc_status
+
+- debug:
+    msg: Can not find oc archive at {{ oc_archive }} oc installation will be skipped
+  when: not oc_arc_status.stat.exists
+
+- name: Create oc Temp Dir
+  file:
+    path: /tmp/oc
+    state: directory
+  when: oc_arc_status.stat.exists
+
+# Since oc archive includes other file and links 
+# and there is no way of just extracting oc without knowing every file you want to exclude
+# going to use a temp dir and cherry pick what I want out of it
+- name: Extract OC binary to temp dir
+  unarchive:
+    src: "{{ oc_archive }}"
+    dest: /tmp/oc/
+  when: oc_arc_status.stat.exists
+
+- name: Ensure OC Binary is in /usr/local/bin
+  copy:
+    src: /tmp/oc/oc
+    dest: /usr/local/bin/oc
+    owner: root
+    group: root
+    mode: '0755'
+  when: oc_arc_status.stat.exists
+
+- name: Ensure bash-completion Package is Installed
+  dnf:
+    name: bash-completion
+    state: present
+  when: oc_arc_status.stat.exists
+
+- name: Setup bash Completion for oc
+  shell: oc completion bash > /etc/bash_completion.d/oc_completion
+  when: oc_arc_status.stat.exists
+
+- name: Ensure bash Completion Script has Proper File Permissions
+  file:
+    path: /etc/bash_completion.d/oc_completion
+    owner: root
+    group: root
+    mode: '0644'
+  when: oc_arc_status.stat.exists
+
+- debug:
+    msg: If oc is new/updated the bash completion may not work properly until you log into a new bash shell.
+  when: oc_arc_status.stat.exists
+
+- name: Remove oc Temp Dir
+  file:
+    path: /tmp/oc
+    state: absent
+  when: oc_arc_status.stat.exists
+
