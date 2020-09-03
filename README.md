@@ -1,7 +1,7 @@
 oc-role
 =========
 
-Ansible Role to install the oc tool (Red Hat OpenShift cli) on a given machine.  
+Ansible Role to install the oc tool (Red Hat OpenShift cli) on a given machine.  This will also install bash completion for `oc` as well.
 
 This was designed to install the official Red Hat certified version which is behind a pay wall at <https://access.redhat.com>.
 
