@@ -10,7 +10,7 @@ This was also designed as part of a desktop provisioning playbooks found here <h
 Requirements
 ------------
 
-- A Red Hat like distribution ie: RHEL, Fedora, Centos.
+- A distribution with `dnf` or `yum` or `apt`
 - An official Red Hat oc gz.tar downloaded locally on machine to which is to be installed.
 
 Role Variables

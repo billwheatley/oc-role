@@ -4,9 +4,16 @@
   stat: "path={{ oc_archive }}"
   register: oc_arc_status
 
-- debug:
+- fail:
     msg: Can not find oc archive at {{ oc_archive }} oc installation will be skipped
+    ignore_errors: yes
   when: not oc_arc_status.stat.exists
+
+- name: Check Supported Distribution
+  assert:
+    that:
+      - "ansible_pkg_mgr in ('apt', 'yum', 'dnf')"
+  when: oc_arc_status.stat.exists
 
 - name: Create oc Temp Dir
   file:
@@ -32,11 +39,14 @@
     mode: '0755'
   when: oc_arc_status.stat.exists
 
-- name: Ensure bash-completion Package is Installed
-  dnf:
-    name: bash-completion
-    state: present
-  when: oc_arc_status.stat.exists
+- name: 'Ensure bash-completion Package is Installed via ({{ ansible_pkg_mgr }})'
+  include_tasks: 'pkg-install-{{ ansible_pkg_mgr }}.yml'
+  when: "ansible_pkg_mgr in ('apt', 'yum', 'dnf') and oc_arc_status.stat.exists"
+
+- fail:
+    msg: WARNING This role is not setup to deal with package manager {{ ansible_pkg_mgr }} can not verify bash-completion Package is installed, bash completions may not work
+  ignore_errors: yes
+  when: ansible_pkg_mgr not in ('apt', 'yum', 'dnf') and oc_arc_status.stat.exists
 
 - name: Setup bash Completion for oc
   shell: oc completion bash > /etc/bash_completion.d/oc_completion
