@@ -1,56 +1,49 @@
 ---
-# Archive is optional
-- name: Check to make sure oc_archive exists
-  stat: "path={{ oc_archive }}"
-  register: oc_arc_status
-
-- fail:
-    msg: Can not find oc archive at {{ oc_archive }} oc installation will be skipped
-    ignore_errors: yes
-  when: not oc_arc_status.stat.exists
-
-- name: Check Supported Distribution
-  assert:
-    that:
-      - "ansible_pkg_mgr in ('apt', 'yum', 'dnf')"
-  when: oc_arc_status.stat.exists
 
 - name: Create oc Temp Dir
   file:
     path: /tmp/oc
     state: directory
-  when: oc_arc_status.stat.exists
+
+- name: Create oc Extract Temp Dir
+  file:
+    path: /tmp/oc/extract
+    state: directory
+
+- name: Download / Install Latest OC binary
+  get_url:
+    url:  https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz
+    dest: /tmp/oc/oc.tar.gz
+    mode: '0555'
+
 
 # Since oc archive includes other file and links 
 # and there is no way of just extracting oc without knowing every file you want to exclude
 # going to use a temp dir and cherry pick what I want out of it
 - name: Extract OC binary to temp dir
   unarchive:
-    src: "{{ oc_archive }}"
-    dest: /tmp/oc/
-  when: oc_arc_status.stat.exists
+    src: /tmp/oc/oc.tar.gz
+    dest: /tmp/oc/extract
 
 - name: Ensure OC Binary is in /usr/local/bin
   copy:
-    src: /tmp/oc/oc
+    src: /tmp/oc/extract/oc
     dest: /usr/local/bin/oc
     owner: root
     group: root
     mode: '0755'
-  when: oc_arc_status.stat.exists
 
 - name: 'Ensure bash-completion Package is Installed via ({{ ansible_pkg_mgr }})'
   include_tasks: 'pkg-install-{{ ansible_pkg_mgr }}.yml'
-  when: "ansible_pkg_mgr in ('apt', 'yum', 'dnf') and oc_arc_status.stat.exists"
+  when: ansible_pkg_mgr in ('apt', 'yum', 'dnf')
 
 - fail:
     msg: WARNING This role is not setup to deal with package manager {{ ansible_pkg_mgr }} can not verify bash-completion Package is installed, bash completions may not work
   ignore_errors: yes
-  when: ansible_pkg_mgr not in ('apt', 'yum', 'dnf') and oc_arc_status.stat.exists
+  when: ansible_pkg_mgr not in ('apt', 'yum', 'dnf')
 
 - name: Setup bash Completion for oc
   shell: oc completion bash > /etc/bash_completion.d/oc_completion
-  when: oc_arc_status.stat.exists
 
 - name: Ensure bash Completion Script has Proper File Permissions
   file:
@@ -58,15 +51,12 @@
     owner: root
     group: root
     mode: '0644'
-  when: oc_arc_status.stat.exists
 
 - debug:
     msg: If oc is new/updated the bash completion may not work properly until you log into a new bash shell.
-  when: oc_arc_status.stat.exists
 
 - name: Remove oc Temp Dir
   file:
     path: /tmp/oc
     state: absent
-  when: oc_arc_status.stat.exists
 

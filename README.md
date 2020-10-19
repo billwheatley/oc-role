@@ -3,7 +3,7 @@ oc-role
 
 Ansible Role to install the oc tool (Red Hat OpenShift cli) on a given machine.  This will also install bash completion for `oc` as well.
 
-This was designed to install the official Red Hat certified version which is behind a pay wall at <https://access.redhat.com>.
+This was designed to install the official Red Hat certified version.
 
 This was also designed as part of a desktop provisioning playbooks found here <https://github.com/billwheatley/provision-desktop>
 
@@ -11,12 +11,11 @@ Requirements
 ------------
 
 - A distribution with `dnf` or `yum` or `apt`
-- An official Red Hat oc gz.tar downloaded locally on machine to which is to be installed.
 
 Role Variables
 --------------
 
-`oc_archive` : This is the file location to the oc archive to install ex: `/home/myuser/automated-install/archive/oc-4.5.7-linux.tar.gz`
+none
 
 Example Playbook
 ----------------
@@ -26,7 +25,6 @@ Example Playbook
   hosts: desktop
   roles:
     - role: oc-role
-      oc_archive: "/home/myuser/automated-install/archive/oc-4.5.7-linux.tar.gz"
 ```
 
 License
