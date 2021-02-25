@@ -33,6 +33,11 @@
     group: root
     mode: '0755'
 
+- name: Remove oc Temp Dir
+  file:
+    path: /tmp/oc
+    state: absent
+
 - name: 'Ensure bash-completion Package is Installed via ({{ ansible_pkg_mgr }})'
   include_tasks: 'pkg-install-{{ ansible_pkg_mgr }}.yml'
   when: ansible_pkg_mgr in ('apt', 'yum', 'dnf')
@@ -41,6 +46,16 @@
     msg: WARNING This role is not setup to deal with package manager {{ ansible_pkg_mgr }} can not verify bash-completion Package is installed, bash completions may not work
   ignore_errors: yes
   when: ansible_pkg_mgr not in ('apt', 'yum', 'dnf')
+
+- name: Ensure kubectl symbolic link to oc exists
+  file:
+    src: /usr/local/bin/oc
+    dest: /usr/local/bin/kubectl
+    owner: root
+    group: root
+    mode: '0755'
+    state: link
+
 
 - name: Setup bash Completion for oc
   shell: oc completion bash > /etc/bash_completion.d/oc_completion
@@ -52,11 +67,18 @@
     group: root
     mode: '0644'
 
-- debug:
-    msg: If oc is new/updated the bash completion may not work properly until you log into a new bash shell.
+- name: Setup bash Completion for kubectl
+  shell: kubectl completion bash > /etc/bash_completion.d/kubectl_completion
 
-- name: Remove oc Temp Dir
+- name: Ensure bash Completion Script has Proper File Permissions
   file:
-    path: /tmp/oc
-    state: absent
+    path: /etc/bash_completion.d/kubectl_completion
+    owner: root
+    group: root
+    mode: '0644'
+
+- debug:
+    msg: If oc or kubectl is new/updated the bash completion may not work properly until you log into a new bash shell.
+
+
 
