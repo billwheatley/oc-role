@@ -10,7 +10,7 @@ This was also designed as part of a desktop provisioning playbooks found here <h
 Requirements
 ------------
 
-- A distribution with `dnf` or `yum` or `apt`
+- A distribution with `dnf`, `dnf5`, `yum` or `apt`
 
 Role Variables
 --------------
