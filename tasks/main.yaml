@@ -58,7 +58,7 @@
 
 
 - name: Setup bash Completion for oc
-  shell: oc completion bash > /etc/bash_completion.d/oc_completion
+  shell: /usr/local/bin/oc completion bash > /etc/bash_completion.d/oc_completion
 
 - name: Ensure bash Completion Script has Proper File Permissions
   file:
@@ -68,7 +68,7 @@
     mode: '0644'
 
 - name: Setup bash Completion for kubectl (as a symbolic link to oc)
-  shell: kubectl completion bash > /etc/bash_completion.d/kubectl_completion
+  shell: /usr/local/bin/kubectl completion bash > /etc/bash_completion.d/kubectl_completion
 
 - name: Ensure bash Completion Script has Proper File Permissions
   file:
